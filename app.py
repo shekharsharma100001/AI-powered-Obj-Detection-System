@@ -1,3 +1,4 @@
+
 import streamlit as st
 from streamlit_webrtc import webrtc_streamer, VideoProcessorBase
 import av
@@ -32,47 +33,25 @@ if mode == "Webcam":
         media_stream_constraints={"video": True, "audio": False},
         async_processing=True,
     )
-elif mode == "Upload Video" or mode == "Use Sample Video":
-    st.subheader("Upload a Video for Detection")
+
+elif mode in ["Upload Video", "Use Sample Video"]:
+    st.subheader("Video Detection")
 
     if mode == "Upload Video":
         uploaded_video = st.file_uploader("Upload a video", type=["mp4", "avi", "mov", "mkv"])
-        if uploaded_video is not None:
-            tfile = tempfile.NamedTemporaryFile(delete=False)
-            tfile.write(uploaded_video.read())
-            video_path = tfile.name
-        else:
+        if uploaded_video is None:
+            st.warning("Please upload a video file.")
             st.stop()
-    elif mode == "Use Sample Video":
-        video_path = "sample_video.mp4"  # Make sure this file exists in the same directory
+
         tfile = tempfile.NamedTemporaryFile(delete=False)
         tfile.write(uploaded_video.read())
         video_path = tfile.name
 
-        stframe = st.empty()
-        cap = cv2.VideoCapture(video_path)
-
-        while cap.isOpened():
-            ret, frame = cap.read()
-            if not ret:
-                break
-
-            results = model.predict(frame, conf=conf_threshold, verbose=False)
-            annotated = results[0].plot()
-
-            stframe.image(annotated, channels="BGR", use_container_width=True)
-
-        cap.release()
-        st.success("Finished processing video.")
-
-elif mode == "Use Sample Video":
-    st.subheader("Using Sample Video for Detection")
-
-    # Replace this with your actual sample video path
-    sample_video_path = "sample_video.mp4"
+    elif mode == "Use Sample Video":
+        video_path = "sample_video.mp4"  # Make sure this file is in the same directory
 
     stframe = st.empty()
-    cap = cv2.VideoCapture(sample_video_path)
+    cap = cv2.VideoCapture(video_path)
 
     while cap.isOpened():
         ret, frame = cap.read()
@@ -85,4 +64,4 @@ elif mode == "Use Sample Video":
         stframe.image(annotated, channels="BGR", use_container_width=True)
 
     cap.release()
-    st.success("Finished processing sample video.")
+    st.success("Finished processing video.")
