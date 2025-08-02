@@ -69,7 +69,5 @@ Made with ❤️ using Streamlit and YOLOv8.
 
 ---
 
-## 📄 License
 
-This project is licensed under the MIT License.
 
