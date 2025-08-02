@@ -6,6 +6,7 @@ import cv2
 from ultralytics import YOLO
 import tempfile
 import numpy as np
+import time
 
 model = YOLO("best.pt")
 
@@ -40,28 +41,28 @@ elif mode in ["Upload Video", "Use Sample Video"]:
     if mode == "Upload Video":
         uploaded_video = st.file_uploader("Upload a video", type=["mp4", "avi", "mov", "mkv"])
         if uploaded_video is None:
-            st.warning("Please upload a video file.")
             st.stop()
-
         tfile = tempfile.NamedTemporaryFile(delete=False)
         tfile.write(uploaded_video.read())
         video_path = tfile.name
 
-    elif mode == "Use Sample Video":
-        video_path = "sample_video.mp4"  # Make sure this file is in the same directory
+    else:  # Use Sample Video
+        video_path = "sample_video.mp4"  # Ensure this exists in the same directory
 
-    stframe = st.empty()
-    cap = cv2.VideoCapture(video_path)
+    if st.button("▶️ Start Detection"):
+        cap = cv2.VideoCapture(video_path)
+        stframe = st.empty()
 
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
-            break
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
 
-        results = model.predict(frame, conf=conf_threshold, verbose=False)
-        annotated = results[0].plot()
+            results = model.predict(frame, conf=conf_threshold, verbose=False)
+            annotated = results[0].plot()
+            stframe.image(annotated, channels="BGR", use_container_width=True)
 
-        stframe.image(annotated, channels="BGR", use_container_width=True)
+            time.sleep(1 / 30.0)  # simulate ~30 FPS
 
-    cap.release()
-    st.success("Finished processing video.")
+        cap.release()
+        st.success("Finished processing video.")
